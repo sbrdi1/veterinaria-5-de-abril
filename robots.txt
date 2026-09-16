@@ -1,0 +1,5 @@
+# Aviso: reemplaza el dominio de abajo por el real al subir al hosting.
+User-agent: *
+Allow: /
+
+Sitemap: REEMPLAZAR-EJEMPLO.cl/sitemap.xml

@@ -1,0 +1,17 @@
+# Credenciales y configuración local (NO subir)
+config.php
+config.local.php
+credenciales*.txt
+
+# Contenido subido por usuarios (imágenes)
+uploads/
+
+# Restos
+*.sql.bak
+*.log
+Thumbs.db
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
