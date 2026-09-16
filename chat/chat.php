@@ -138,69 +138,162 @@ function http_post_json(string $url, array $payload): ?string {
 /* ------------------------------------------------------------------ */
 
 /**
- * Modo FAQ: responde por palabras clave usando los datos reales.
+ * Modo FAQ: responde coherentemente por temas, con memoria de la conversación.
  */
 function faq_responder(string $msg, string $ctx, string $wa, string $wa_link): string {
-    $m = mb_strtolower($msg);
+    $mn = faq_normalizar($msg);
 
-    if (preg_match('/hola|buenas|holi|hey/i', $m)) {
-        return "¡Hola! Soy el asistente de Veterinaria 5 de Abril.\nPuedo ayudarte con precios, vacunas, castración, horarios y más.\nY si prefieres, escríbenos por WhatsApp: {$wa_link}";
+    // Tema de la conversación anterior (para seguimientos del tipo "¿y el perro?")
+    $last_keys = $_SESSION['chat_topic_keys'] ?? null;
+
+    // --- 1) Urgencia: máxima prioridad ---
+    if (preg_match('/urgen|emergenc|intoxic|atropell|mordid|grave|ahora mismo|\b24\b/i', $mn)) {
+        $lin = faq_filtrar($ctx, ['Urgencia']);
+        $_SESSION['chat_topic_keys'] = ['Urgencia'];
+        return "Si es una urgencia esto es lo que tenemos:\n{$lin}\nEscríbenos YA por WhatsApp y avisamos al equipo:\n→ {$wa_link}";
     }
 
-    if (preg_match('/precio|cu[áa]nto|cuanto|valor|tarifa|costo|cuesta|vale/i', $m)) {
-        return "Estos son nuestros precios:\n{$ctx}\nMás información: Agendar por WhatsApp: {$wa_link}";
+    // --- 2) Detección de tema (solo o junto con precios) ---
+    [$topic, $keys] = faq_detectar_tema($mn);
+    if ($topic !== null) {
+        $_SESSION['chat_topic_keys'] = $keys;
+        $lin = faq_filtrar_especie($ctx, $keys, $mn);
+        $tiene_precio = faq_tiene_precio($mn);
+        return faq_respuesta_tema($topic, $lin, $tiene_precio, $wa_link);
     }
 
-    if (preg_match('/vacu|antir[r]?[áa]bica|polivalente|rabia|dosis/i', $m)) {
-        $ext = '';
-        if (preg_match('/gato|felino/i', $m)) $ext = 'Para gatos también tenemos vacuna de leucemia felina.';
-        if (preg_match('/perro|canino/i', $m)) $ext = 'Para perros: antirrábica y polivalente.';
-        $lin = faq_filtrar($ctx, ['Vacuna']);
-        return "Sobre vacunas:\n{$lin}\n{$ext}Agenda tu vacuna aquí: {$wa_link}";
+    // --- 3) Agenda / reserva ---
+    if (preg_match('/agend|reserv|cita\b|concertar|pedir hora/i', $mn)) {
+        return "¡Con gusto te coordinamos una hora!\nEscribimos por WhatsApp para agendar:\n→ {$wa_link}";
     }
 
-    if (preg_match('/castr|esteriliz|operaci[óo]n|cirug/i', $m)) {
-        $lin = faq_filtrar($ctx, ['Castración', 'Limpieza Dental']);
-        return "Sobre castración:\n{$lin}\nEs un procedimiento seguro con seguimiento post-operatorio.\nConsulta disponibilidad: {$wa_link}";
-    }
-
-    if (preg_match('/desparasit|parasito|pulgas|garrapatas|anti-pulgas|antipulgas/i', $m)) {
-        $lin = faq_filtrar($ctx, ['Desparasitación']);
-        return "Sobre desparasitación:\n{$lin}\nConsulta el peso de tu mascota y te guiamos: {$wa_link}";
-    }
-
-    if (preg_match('/ba[ñn]o|peluquer|est[ée]tica|corte de u[ñn]as/i', $m)) {
-        $lin = faq_filtrar($ctx, ['Baño', 'Corte de Uñas']);
-        return "Servicios de higiene:\n{$lin}\nAgenda tu hora: {$wa_link}";
-    }
-
-    if (preg_match('/horari|hora de atenci|abre|cierra|atiende/i', $m)) {
+    // --- 4) Intención simple ---
+    if (preg_match('/horari|a qu[eé] hora|atienden|abren|cierran/i', $mn)) {
         return "Atendemos de Lunes a Sábado.\nDirección: Av. Lafquén 260, Maipú.\nPara reservar tu hora: {$wa_link}";
     }
-
-    if (preg_match('/d[óo]nde|direcci[óo]n|ubicaci[óo]n|mapa|llegar|queda/i', $m)) {
-        return "Nos encuentras en Av. Lafquén 260, Maipú, Santiago (a pasos del centro de Maipú).\n¿Quieres que te guiemos llegando? Escríbenos: {$wa_link}";
+    if (preg_match('/d[oó]nde|direcci[oó]n|ubicaci[oó]n|mapa|llegar|como llego|d[oó]nde quedan/i', $mn)) {
+        return "Nos encuentras en Av. Lafquén 260, Maipú (a pasos del centro de Maipú).\n¿Quieres que te guiemos? Escríbenos: {$wa_link}";
     }
-
-    if (preg_match('/urgen|emergen|ahora|intoxic|atropello|mordida|24/i', $m)) {
-        $lin = faq_filtrar($ctx, ['Urgencia']);
-        return "Para urgencias:\n{$lin}\nSi es una emergencia, escríbenos lo antes posible por WhatsApp y avisamos al equipo: {$wa_link}";
+    if (preg_match('/whatsapp|\btel[eé]fono\b|escribir|llamar/i', $mn)) {
+        return "Nuestro WhatsApp es +56 9 9599 9482\nEscríbenos directo: {$wa_link}";
     }
-
-    if (preg_match('/consulta|examen|revisi[óo]n|diagnost/i', $m)) {
-        $lin = faq_filtrar($ctx, ['Consulta']);
-        return "Nuestras consultas:\n{$lin}\n¿Quieres agendar una evaluación completa? {$wa_link}";
-    }
-
-    if (preg_match('/domicilio|a casa|visita/i', $m)) {
+    if (preg_match('/domicilio|a casa|visita domiciliar/i', $mn)) {
         return "La atención es en nuestro local (Av. Lafquén 260, Maipú).\nPara casos especiales escríbenos y vemos opciones: {$wa_link}";
     }
 
-    if (preg_match('/whatsapp|escribir|llamar|telefono|telf/i', $m)) {
-        return "Puedes escribirnos al WhatsApp: +56 9 9599 9482\n→ {$wa_link}";
+    // --- 5) Precio general (reutiliza el tema anterior si el mensaje es corto) ---
+    if (faq_tiene_precio($mn)) {
+        $lin = ($last_keys && mb_strlen($mn) < 30) ? faq_filtrar_especie($ctx, $last_keys, $mn) : $ctx;
+        return "Estos son nuestros precios:\n{$lin}\n{$wa_link}";
     }
 
-    return "No estoy seguro de haber entendido tu consulta.\nPuedo ayudarte con precios, vacunas, castración, horarios y dirección.\nO escríbenos directo por WhatsApp: {$wa_link}";
+    // --- 6) Seguimiento: reutiliza el tema anterior ---
+    if ($last_keys && faq_es_seguimiento($mn)) {
+        $lin = faq_filtrar_especie($ctx, $last_keys, $mn);
+        return "Siguiendo con lo anterior:\n{$lin}\nSi prefieres, te atendemos por WhatsApp: {$wa_link}";
+    }
+
+    // --- 7) Saludo ---
+    if (preg_match('/\b(hola|holi|hol[áa]|buenas|buen d[íi]a|buenos d[íi]as|hey|oye)\b/i', $mn)) {
+        return "¡Hola! Soy el asistente de Veterinaria 5 de Abril.\nPregúntame por precios, vacunas, castración, horarios o dirección.\nY si prefieres, escríbenos por WhatsApp: {$wa_link}";
+    }
+
+    // --- 8) Fallback claro ---
+    return "No estoy seguro de tu consulta. Puedo ayudarte con:\n• Precios de servicios\n• Vacunas\n• Castración\n• Horarios y dirección\n\nEscríbeme eso o contáctanos por WhatsApp: {$wa_link}";
+}
+
+/**
+ * Detecta el tema dominante del mensaje. Devuelve [etiqueta|null, claves_de_servicio].
+ */
+function faq_detectar_tema(string $mn): array {
+    $temas = [
+        'vacunas'       => [['/vacu/', '/antirrabica|anti[ -]?rabica/', '/polivalente/', '/rabia/', '/dosis/', '/leucemia/', '/refuerzo/'], ['Vacuna']],
+        'castracion'    => [['/castr/', '/esteriliz/', '/oper[aá]cion|oper[aá]r/', '/cirug/', '/quitar los/'], ['Castración']],
+        'desparasitacion' => [['/desparasit/', '/par[áa]sito/', '/pulga/', '/garrapata/', '/anti[ -]?pulga/'], ['Desparasitación']],
+        'higiene'       => [['/ba[ñn]o/', '/peluquer/', '/est[ée]tica/', '/corte de u[ñn]as/', '/u[ñn]as/', '/dental/', '/limpieza/'], ['Baño', 'Corte de Uñas']],
+        'laboratorio'   => [['/an[áa]lisis/', '/laborator/', '/sangre/', '/orina/', '/radiograf/', '/ecograf/'], ['Análisis', 'Ecografía', 'Radiografía']],
+        'especialistas' => [['/cardio/', '/dermat/', '/oftalmo/', '/coraz[oó]n/', '/piel/', '/ojos/', '/especialist/'], ['Cardiología', 'Dermatología', 'Oftalmología']],
+        'consulta'      => [['/consult/', '/revisi[oó]n/', '/diagn[oó]stic/', '/evaluaci[oó]n/', '/cheque[oó]/'], ['Consulta']],
+    ];
+
+    $best = null;
+    $best_score = 0;
+    foreach ($temas as $nombre => [$regexes, $keys]) {
+        $score = 0;
+        foreach ($regexes as $re) {
+            if (preg_match($re, $mn)) $score++;
+        }
+        // Refuerza si coincide con un servicio real del local
+        if ($score > 0 && preg_match('/' . implode('|', array_map('faq_normalizar', array_map('preg_quote', $keys))) . '/', $mn)) {
+            $score += 2;
+        }
+        if ($score > $best_score) {
+            $best_score = $score;
+            $best = $nombre;
+        }
+    }
+    if ($best_score === 0) return [null, []];
+
+    return [$best, $temas[$best][1]];
+}
+
+/**
+ * Filtra las líneas del contexto por tema y por especie (gato/perro) si se menciona.
+ */
+function faq_filtrar_especie(string $ctx, array $keys, string $mn): string {
+    $lin = faq_filtrar($ctx, $keys);
+
+    $es_gato = (bool)preg_match('/gat|felino/i', $mn);
+    $es_perro = (bool)preg_match('/perr|canin/i', $mn);
+
+    if ($es_gato xor $es_perro) {
+        $mascota = $es_gato ? 'Gato' : 'Perro';
+        $out = [];
+        foreach (explode("\n", $lin) as $l) {
+            if (mb_stripos($l, $mascota) !== false) {
+                $out[] = $l;
+            }
+        }
+        if ($out) return implode("\n", $out);
+    }
+    return $lin;
+}
+
+/**
+ * Compone la respuesta según el tema detectado.
+ */
+function faq_respuesta_tema(string $topic, string $lin, bool $tiene_precio, string $wa_link): string {
+    $titulos = [
+        'vacunas'       => 'Sobre vacunas',
+        'castracion'    => 'Sobre la castración',
+        'desparasitacion' => 'Sobre desparasitación',
+        'higiene'       => 'Servicios de higiene y estética',
+        'laboratorio'   => 'Exámenes y laboratorio',
+        'especialistas' => 'Nuestros especialistas',
+        'consulta'      => 'Nuestras consultas',
+    ];
+    $titulo = $titulos[$topic] ?? 'Información';
+
+    $extras = [
+        'castracion' => "\nEs un procedimiento seguro, con seguimiento post-operatorio.",
+        'laboratorio' => "\nLos resultados los revisa un veterinario.",
+    ];
+
+    return "{$titulo}:\n{$lin}\n¿Quieres agendar? {$wa_link}" . ($extras[$topic] ?? '');
+}
+
+/**
+ * ¿El mensaje pide precios/costos?
+ */
+function faq_tiene_precio(string $mn): bool {
+    return (bool)preg_match('/precio|cu[áa]nto|valor|tarifa|costo|cuesta|cotiz|cu[áa]l es el/i', $mn);
+}
+
+/**
+ * ¿El mensaje es un seguimiento corto del tema anterior?
+ */
+function faq_es_seguimiento(string $mn): bool {
+    return (bool)preg_match('/^(y|entonces|ah[íi]|ya|ok|dale|bueno|vale|claro|ya veo|esa|ese|eso)\b/i', $mn);
 }
 
 /**
@@ -218,4 +311,12 @@ function faq_filtrar(string $ctx, array $keys): string {
         }
     }
     return $out ? implode("\n", $out) : $ctx;
+}
+
+/**
+ * Normaliza el texto a minúsculas y sin tildes/ñ para simplificar los matches.
+ */
+function faq_normalizar(string $s): string {
+    $map = ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n', 'Á' => 'a', 'É' => 'e', 'Í' => 'i', 'Ó' => 'o', 'Ú' => 'u', 'Ü' => 'u', 'Ñ' => 'n'];
+    return strtr(mb_strtolower($s), $map);
 }
