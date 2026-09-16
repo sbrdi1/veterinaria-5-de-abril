@@ -56,6 +56,14 @@ CREATE TABLE testimonios (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+CREATE TABLE chat_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mensaje TEXT NOT NULL,
+    respuesta TEXT NOT NULL,
+    modo VARCHAR(20) NOT NULL DEFAULT 'faq',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 -- Usuarios: mama (admin) + propietario (editor)
 -- passwords: ver archivo credenciales.txt (hashes bcrypt únicos)
 INSERT INTO usuarios (nombre, email, password, rol) VALUES

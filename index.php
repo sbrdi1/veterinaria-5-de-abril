@@ -33,6 +33,7 @@ function svc_img($img) {
 <meta property="og:url" content="<?= SITE_URL ?>">
 <link rel="icon" type="image/svg+xml" href="<?= SITE_URL ?>/img/favicon.svg">
 <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
+<link rel="stylesheet" href="<?= SITE_URL ?>/chat/chat.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -169,6 +170,8 @@ function svc_img($img) {
     <p><?= SITE_NAME ?> · Av. Lafquén 260, Maipú · <a href="https://wa.me/<?= WHATSAPP_NUMBER ?>">+569 9599 9482</a></p>
     <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?></p>
 </footer>
+
+<?php include __DIR__ . '/chat/_widget.php'; ?>
 
 </body>
 </html>

@@ -20,6 +20,7 @@ $me = auth_user();
         <a href="categorias.php">Categorías</a>
         <a href="testimonios.php">Testimonios</a>
         <a href="mensajes.php">Consultas</a>
+        <a href="chat_logs.php">Asistente IA</a>
         <?php if (($me['rol'] ?? '') === 'admin'): ?><a href="usuarios.php">Usuarios</a><?php endif; ?>
         <a href="<?= SITE_URL ?>" target="_blank">Ver sitio</a>
     </div>

@@ -20,6 +20,11 @@ define('HORARIOS', 'Lunes a Sábado'); // ej: 'Lunes a Viernes 10:00-19:00 · S�
 // Mapa embebido (Google Maps sin API)
 define('MAPS_EMBED_URL', 'https://maps.google.com/maps?q=' . urlencode('Av. Lafquén 260, Maipú, Santiago, Chile') . '&z=15&output=embed');
 
+// Asistente virtual (IA). Dejar AI_API_KEY vacío para modo FAQ gratuito.
+// Crea una clave gratis en https://aistudio.google.com (Gemini) y pégala aquí.
+define('AI_API_KEY', '');
+define('AI_MODEL', 'gemini-2.0-flash');
+
 // Google Analytics / Google Ads - Measurement ID (ej: G-XXXXXXXXXX)
 // Poner '' para desactivar el tag
 define('GA_MEASUREMENT_ID', '');

@@ -53,6 +53,7 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
 <meta property="og:url" content="<?= SITE_URL ?>/landing.php">
 <link rel="icon" type="image/svg+xml" href="<?= SITE_URL ?>/img/favicon.svg">
 <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
+<link rel="stylesheet" href="<?= SITE_URL ?>/chat/chat.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -168,6 +169,8 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
 </footer>
 
 <a class="wa-fixed" href="<?= $whatsapp_msg_general ?>" target="_blank">WhatsApp</a>
+
+<?php include __DIR__ . '/chat/_widget.php'; ?>
 
 </body>
 </html>

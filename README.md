@@ -9,7 +9,8 @@
 - `index.php` — sitio público (catálogo de servicios)
 - `landing.php` — landing de conversión para Google Ads (anclas: atención/vacunas/castración + WhatsApp)
 - `ads/` — estructura completa de campaña Google Ads (`campana_estructura.md`) + estimación (`estimacion.md`)
-- `admin/` — panel de administración (login, dashboard, servicios, categorías, consultas)
+- `admin/` — panel de administración (login, dashboard, servicios, categorías, testimonios, usuarios, consultas, historial del asistente IA)
+- `chat/` — asistente virtual (widget + endpoint). Con `AI_API_KEY` usa Google Gemini; sin clave responde FAQ automático
 - `css/style.css` — estilos
 - `sql/setup.sql` — esquema + datos de ejemplo
 - `tools/fix_acentos.php` — corrige acentos (ya ejecutado una vez)
@@ -22,6 +23,7 @@ Editar `config.php`:
 - `WHATSAPP_NUMBER` (número real, formato `569XXXXXXXX`)
 - `ADDRESS` / `ADDRESS_SHORT` (dirección del local, se usa en landing y footer)
 - `GA_MEASUREMENT_ID` — el `G-XXXX` de Google Ads; poner `''` para desactivar el tag
+- `AI_API_KEY` / `AI_MODEL` — asistente virtual. Vacío = modo FAQ gratuito. Para IA real crea una clave gratis en https://aistudio.google.com (Gemini, modelo `gemini-2.0-flash`) y pégala. Las conversaciones se guardan en `admin/chat_logs.php`
 
 ## Importar la base de datos (IMPORTANTE: respetar UTF-8)
 
