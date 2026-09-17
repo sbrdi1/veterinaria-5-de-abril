@@ -51,6 +51,11 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
 <meta property="og:description" content="Atención general, vacunas y castración. Av. Lafquén 260, Maipú. Agenda hoy por WhatsApp.">
 <meta property="og:locale" content="es_CL">
 <meta property="og:url" content="<?= SITE_URL ?>/landing.php">
+<meta property="og:image" content="<?= SITE_URL ?>/img/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<?= SITE_NAME ?> en Maipú">
+<link rel="canonical" href="<?= SITE_URL ?>/landing.php">
 <link rel="icon" type="image/svg+xml" href="<?= SITE_URL ?>/img/favicon.svg">
 <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
 <link rel="stylesheet" href="<?= SITE_URL ?>/chat/chat.css">
@@ -60,6 +65,7 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
   "@type": "VeterinaryCare",
   "name": "<?= SITE_NAME ?>",
   "url": "<?= SITE_URL ?>/landing.php",
+  "image": "<?= SITE_URL ?>/img/og-cover.png",
   "telephone": "+56 9 9599 9482",
   "priceRange": "$$",
   "address": {
@@ -93,7 +99,10 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
     <h1>Veterinaria 5 de Abril</h1>
     <p class="lead">Atención general, vacunas y castración para perros y gatos en Maipú.</p>
     <div class="addr">Av. Lafquén 260, Maipú · Atención de lunes a sábado</div>
-    <a class="btn-wa-lg" href="<?= $whatsapp_msg_general ?>" target="_blank">Agenda por WhatsApp</a>
+    <div class="hero-cta">
+        <a class="btn-wa-lg" href="<?= $whatsapp_msg_general ?>" target="_blank">Agenda por WhatsApp</a>
+        <a class="btn-sec" href="<?= SITE_URL ?>/agenda.php">Agendar por formulario</a>
+    </div>
 </section>
 
 <div class="trust-strip">
@@ -163,8 +172,11 @@ $testimonios = db()->query("SELECT * FROM testimonios WHERE activo=1 ORDER BY cr
     <a class="btn-wa-lg" href="<?= wa_link('Hola, tengo una consulta sobre sus servicios.') ?>" target="_blank">Hablar con nosotros</a>
 </section>
 
+<?php $lead_origen = 'landing'; include __DIR__ . '/incl/lead_form.php'; ?>
+
 <footer class="footer">
     <p><?= SITE_NAME ?> · Av. Lafquén 260, Maipú · <a href="https://wa.me/<?= WHATSAPP_NUMBER ?>">+569 9599 9482</a></p>
+    <p><a href="<?= SITE_URL ?>/privacidad.php">Política de Privacidad</a> · <a href="<?= SITE_URL ?>/terminos.php">Términos y Condiciones</a></p>
     <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?></p>
 </footer>
 

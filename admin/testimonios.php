@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/_header.php'; ?>
 <?php
+csrf_guard();
 $edit = isset($_GET['edit']) ? (int)$_GET['edit'] : -1;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -36,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['delete'])) {
+    if (!csrf_ok()) { http_response_code(403); exit('Solicitud inválida (error de seguridad).'); }
     $id = (int)$_GET['delete'];
     $stmt = db()->prepare("DELETE FROM testimonios WHERE id=?");
     $stmt->bind_param('i', $id);
@@ -56,6 +58,7 @@ if ($edit > 0) foreach ($testimonios as $t) if ((int)$t['id'] === $edit) { $curr
 <div class="card-admin" style="max-width:560px">
     <h2 style="font-size:1.1rem; margin-bottom:1rem"><?= $current ? 'Editar Testimonio' : 'Nuevo Testimonio' ?></h2>
     <form method="post" action="testimonios.php">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= $current ? (int)$current['id'] : '0' ?>">
         <div class="form-group">
             <label>Nombre *</label>
@@ -99,7 +102,7 @@ if ($edit > 0) foreach ($testimonios as $t) if ((int)$t['id'] === $edit) { $curr
             <td><?= $t['activo'] ? '<span class="badge">Visible</span>' : '<span style="color:#dc2626;font-size:.8rem">Oculto</span>' ?></td>
             <td class="actions">
                 <a class="btn-edit" href="testimonios.php?edit=<?= (int)$t['id'] ?>">Editar</a>
-                <a class="btn-del" href="testimonios.php?delete=<?= (int)$t['id'] ?>" onclick="return confirm('¿Eliminar este testimonio?')">Eliminar</a>
+                <a class="btn-del" href="<?= csrf_url('testimonios.php?delete=' . (int)$t['id']) ?>" onclick="return confirm('¿Eliminar este testimonio?')">Eliminar</a>
             </td>
         </tr>
         <?php endforeach; ?>

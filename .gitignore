@@ -6,6 +6,9 @@ credenciales*.txt
 # Contenido subido por usuarios (imágenes)
 uploads/
 
+# Respaldos generados por tools/backup.php
+backups/
+
 # Restos
 *.sql.bak
 *.log

@@ -29,6 +29,15 @@ define('AI_MODEL', 'gemini-2.0-flash');
 // Poner '' para desactivar el tag
 define('GA_MEASUREMENT_ID', '');
 
+// Notificaciones por correo al dueño (opcional). Dejar SMTP_HOST vacío para desactivar.
+// SMTP_USER/PASS deben tener permisos de envío (ej: una cuenta Gmail con contraseña de aplicación).
+define('SMTP_HOST', '');
+define('SMTP_PORT', 587);
+define('SMTP_USER', '');
+define('SMTP_PASS', '');
+define('SMTP_SECURE', 'tls'); // tls | ssl | ''
+define('SMTP_TO', '');
+
 define('UPLOADS_DIR', __DIR__ . '/uploads/');
 define('SERVICIOS_IMG_DIR', UPLOADS_DIR . 'servicios/');
 define('CATEGORIAS_IMG_DIR', UPLOADS_DIR . 'categorias/');

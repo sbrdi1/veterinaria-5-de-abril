@@ -2,20 +2,35 @@
 require __DIR__ . '/../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $pass = $_POST['password'] ?? '';
-    $stmt = db()->prepare("SELECT * FROM usuarios WHERE email=? AND activo=1 LIMIT 1");
-    $stmt->bind_param('s', $email);
-    $stmt->execute();
-    $u = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    if ($u && password_verify($pass, $u['password'])) {
-        $_SESSION['user_id'] = $u['id'];
-        $_SESSION['user'] = ['id' => $u['id'], 'nombre' => $u['nombre'], 'email' => $u['email'], 'rol' => $u['rol']];
-        header('Location: index.php');
-        exit;
+    if (!csrf_ok()) {
+        $error = 'Sesión expirada, recarga la página e inténtalo de nuevo.';
+    } else {
+        $email = trim($_POST['email'] ?? '');
+        $pass = $_POST['password'] ?? '';
+        $bkey = brute_key($email);
+
+        $block = brute_status($bkey);
+        if ($block['blocked']) {
+            $mins = (int)ceil($block['retry_in'] / 60);
+            $error = 'Demasiados intentos fallidos. Intenta de nuevo en ' . $mins . ' min.';
+        } else {
+            $stmt = db()->prepare("SELECT * FROM usuarios WHERE email=? AND activo=1 LIMIT 1");
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $u = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($u && password_verify($pass, $u['password'])) {
+                brute_ok($bkey);
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $u['id'];
+                $_SESSION['user'] = ['id' => $u['id'], 'nombre' => $u['nombre'], 'email' => $u['email'], 'rol' => $u['rol']];
+                header('Location: index.php');
+                exit;
+            }
+            brute_fail($bkey);
+            $error = 'Correo o contraseña incorrectos.';
+        }
     }
-    $error = 'Correo o contraseña incorrectos.';
 }
 ?>
 <!DOCTYPE html>
@@ -33,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="sub">Panel de administración</div>
         <?php if (isset($error)): ?><div class="flash flash-err"><?= sanitize($error) ?></div><?php endif; ?>
         <form method="post" action="">
+            <?= csrf_field() ?>
             <div class="form-group">
                 <label>Correo electrónico</label>
                 <input type="email" name="email" required autofocus>

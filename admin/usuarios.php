@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/_header.php'; ?>
 <?php
+csrf_guard();
 require_admin();
 
 $edit = isset($_GET['edit']) ? (int)$_GET['edit'] : -1;
@@ -77,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['delete'])) {
+    if (!csrf_ok()) { http_response_code(403); exit('Solicitud inválida (error de seguridad).'); }
     $id = (int)$_GET['delete'];
     $self = isset(auth_user()['id']) ? (int)auth_user()['id'] : 0;
     if ($id === $self) {
@@ -114,6 +116,7 @@ $me_id = isset(auth_user()['id']) ? (int)auth_user()['id'] : 0;
 <div class="card-admin" style="max-width:520px">
     <h2 style="font-size:1.1rem; margin-bottom:1rem"><?= $current ? 'Editar Usuario' : 'Nuevo Usuario' ?></h2>
     <form method="post" action="usuarios.php">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= $current ? (int)$current['id'] : '0' ?>">
         <div class="form-group">
             <label>Nombre *</label>
@@ -165,7 +168,7 @@ $me_id = isset(auth_user()['id']) ? (int)auth_user()['id'] : 0;
             <td class="actions">
                 <a class="btn-edit" href="usuarios.php?edit=<?= (int)$u['id'] ?>">Editar</a>
                 <?php if ((int)$u['id'] !== $me_id): ?>
-                <a class="btn-del" href="usuarios.php?delete=<?= (int)$u['id'] ?>" onclick="return confirm('¿Eliminar este usuario?')">Eliminar</a>
+                <a class="btn-del" href="<?= csrf_url('usuarios.php?delete=' . (int)$u['id']) ?>" onclick="return confirm('¿Eliminar este usuario?')">Eliminar</a>
                 <?php endif; ?>
             </td>
         </tr>

@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/_header.php'; ?>
 <?php
+csrf_guard();
 $edit = isset($_GET['edit']) ? (int)$_GET['edit'] : -1;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -51,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['delete'])) {
+    if (!csrf_ok()) { http_response_code(403); exit('Solicitud inválida (error de seguridad).'); }
     $id = (int)$_GET['delete'];
     $count = (int)db()->query("SELECT COUNT(*) FROM servicios WHERE categoria_id=$id")->fetch_row()[0];
     if ($count > 0) {
@@ -79,6 +81,7 @@ if ($edit > 0) foreach ($cats as $c) if ((int)$c['id'] === $edit) { $current = $
 <div class="card-admin" style="max-width:520px">
     <h2 style="font-size:1.1rem; margin-bottom:1rem"><?= $current ? 'Editar Categoría' : 'Nueva Categoría' ?></h2>
     <form method="post" action="categorias.php" enctype="multipart/form-data">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= $current ? (int)$current['id'] : '0' ?>">
         <input type="hidden" name="keep_img" value="<?= sanitize($current['imagen'] ?? '') ?>">
         <div class="form-group">
@@ -124,7 +127,7 @@ if ($edit > 0) foreach ($cats as $c) if ((int)$c['id'] === $edit) { $current = $
             <td><?= $c['activa'] ? '<span class="badge">Activa</span>' : '<span style="color:#dc2626;font-size:.8rem">Inactiva</span>' ?></td>
             <td class="actions">
                 <a class="btn-edit" href="categorias.php?edit=<?= (int)$c['id'] ?>">Editar</a>
-                <a class="btn-del" href="categorias.php?delete=<?= (int)$c['id'] ?>" onclick="return confirm('¿Eliminar esta categoría?')">Eliminar</a>
+                <a class="btn-del" href="<?= csrf_url('categorias.php?delete=' . (int)$c['id']) ?>" onclick="return confirm('¿Eliminar esta categoría?')">Eliminar</a>
             </td>
         </tr>
         <?php endforeach; ?>

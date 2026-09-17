@@ -64,6 +64,41 @@ CREATE TABLE chat_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+CREATE TABLE login_intentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clave VARCHAR(64) NOT NULL UNIQUE COMMENT 'hash correo+IP',
+    intentos INT NOT NULL DEFAULT 1,
+    bloqueado_hasta DATETIME DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE reservas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(120) NOT NULL,
+    telefono VARCHAR(30) NOT NULL,
+    email VARCHAR(150) DEFAULT NULL,
+    servicio_id INT DEFAULT NULL,
+    servicio VARCHAR(200) DEFAULT NULL,
+    mascota VARCHAR(100) DEFAULT NULL,
+    especie VARCHAR(20) DEFAULT NULL COMMENT 'perro|gato|otro',
+    fecha_preferida DATE DEFAULT NULL,
+    momento VARCHAR(20) DEFAULT NULL COMMENT 'mañana|tarde|cualquiera',
+    mensaje TEXT,
+    estado ENUM('pendiente','confirmada','cancelada','completada') NOT NULL DEFAULT 'pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (servicio_id) REFERENCES servicios(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE leads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(120) DEFAULT NULL,
+    telefono VARCHAR(30) NOT NULL,
+    mascota VARCHAR(100) DEFAULT NULL,
+    vista TEXT,
+    seguido TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 -- Usuarios: mama (admin) + propietario (editor)
 -- passwords: ver archivo credenciales.txt (hashes bcrypt únicos)
 INSERT INTO usuarios (nombre, email, password, rol) VALUES

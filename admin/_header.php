@@ -20,13 +20,16 @@ $me = auth_user();
         <a href="categorias.php">Categorías</a>
         <a href="testimonios.php">Testimonios</a>
         <a href="mensajes.php">Consultas</a>
+        <a href="reservas.php">Reservas</a>
+        <a href="leads.php">Leads</a>
         <a href="chat_logs.php">Asistente IA</a>
-        <?php if (($me['rol'] ?? '') === 'admin'): ?><a href="usuarios.php">Usuarios</a><?php endif; ?>
+        <?php if (($me['rol'] ?? '') === 'admin'): ?><a href="usuarios.php">Usuarios</a>
+        <a href="<?= SITE_URL ?>/tools/backup.php">Respaldo</a><?php endif; ?>
         <a href="<?= SITE_URL ?>" target="_blank">Ver sitio</a>
     </div>
     <div class="nav-links">
         <span style="color:var(--muted); font-size:.85rem">👤 <?= sanitize($me['nombre']) ?></span>
-        <a href="logout.php" style="color:#dc2626">Salir</a>
+        <a href="<?= csrf_url('logout.php') ?>" style="color:#dc2626">Salir</a>
     </div>
 </nav>
 <div class="admin-wrap">

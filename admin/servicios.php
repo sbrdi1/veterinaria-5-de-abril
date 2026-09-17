@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/_header.php'; ?>
 <?php
+csrf_guard();
 $edit = isset($_GET['edit']) ? (int)$_GET['edit'] : -1;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['delete'])) {
+    if (!csrf_ok()) { http_response_code(403); exit('Solicitud inválida (error de seguridad).'); }
     $id = (int)$_GET['delete'];
     $row = db()->query("SELECT imagen FROM servicios WHERE id=$id")->fetch_assoc();
     $stmt = db()->prepare("DELETE FROM servicios WHERE id=?");
@@ -86,6 +88,7 @@ if ($edit > 0) {
 <div class="card-admin">
     <h2 style="font-size:1.1rem; margin-bottom:1rem"><?= $current ? 'Editar Servicio' : 'Nuevo Servicio' ?></h2>
     <form method="post" action="servicios.php" enctype="multipart/form-data">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= $current ? (int)$current['id'] : '0' ?>">
         <input type="hidden" name="keep_img" value="<?= sanitize($current['imagen'] ?? '') ?>">
         <div class="form-grid">
@@ -161,7 +164,7 @@ if ($edit > 0) {
             <td><?= $s['activo'] ? '<span class="badge">Activo</span>' : '<span style="color:#dc2626;font-size:.8rem">Inactivo</span>' ?></td>
             <td class="actions">
                 <a class="btn-edit" href="servicios.php?edit=<?= (int)$s['id'] ?>">Editar</a>
-                <a class="btn-del" href="servicios.php?delete=<?= (int)$s['id'] ?>" onclick="return confirm('¿Eliminar este servicio?')">Eliminar</a>
+                <a class="btn-del" href="<?= csrf_url('servicios.php?delete=' . (int)$s['id']) ?>" onclick="return confirm('¿Eliminar este servicio?')">Eliminar</a>
             </td>
         </tr>
         <?php endforeach; ?>

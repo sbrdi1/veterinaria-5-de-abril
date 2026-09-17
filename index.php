@@ -30,7 +30,12 @@ function svc_img($img) {
 <meta property="og:title" content="<?= SITE_NAME ?> | Servicios Veterinarios en Maipú">
 <meta property="og:description" content="Atención general, vacunas, castración y urgencias. Av. Lafquén 260, Maipú. Agenda por WhatsApp.">
 <meta property="og:locale" content="es_CL">
-<meta property="og:url" content="<?= SITE_URL ?>">
+<meta property="og:url" content="<?= SITE_URL ?>/index.php">
+<meta property="og:image" content="<?= SITE_URL ?>/img/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<?= SITE_NAME ?> en Maipú">
+<link rel="canonical" href="<?= SITE_URL ?>/index.php">
 <link rel="icon" type="image/svg+xml" href="<?= SITE_URL ?>/img/favicon.svg">
 <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
 <link rel="stylesheet" href="<?= SITE_URL ?>/chat/chat.css">
@@ -40,6 +45,7 @@ function svc_img($img) {
   "@type": "VeterinaryCare",
   "name": "<?= SITE_NAME ?>",
   "url": "<?= SITE_URL ?>",
+  "image": "<?= SITE_URL ?>/img/og-cover.png",
   "telephone": "+56 9 9599 9482",
   "priceRange": "$$",
   "address": {
@@ -75,6 +81,7 @@ function svc_img($img) {
         <a href="<?= SITE_URL ?>" class="active">Inicio</a>
         <a href="#servicios">Servicios</a>
         <a href="#higiene">Higiene</a>
+        <a href="<?= SITE_URL ?>/agenda.php">Agendar hora</a>
     </div>
     <a class="btn-wa" href="https://wa.me/<?= WHATSAPP_NUMBER ?>?text=Hola, quiero agendar una hora" target="_blank">WhatsApp</a>
 </nav>
@@ -86,6 +93,7 @@ function svc_img($img) {
     <div class="hero-cta">
         <a class="btn-wa-lg" target="_blank"
            href="https://wa.me/<?= WHATSAPP_NUMBER ?>?text=<?= urlencode('Hola, quiero agendar una hora en Veterinaria 5 de Abril.') ?>">Agendar por WhatsApp</a>
+        <a class="btn-sec" href="<?= SITE_URL ?>/agenda.php">Agendar por formulario</a>
     </div>
 </section>
 
@@ -100,7 +108,7 @@ function svc_img($img) {
             <div class="card">
                 <?php $im = svc_img($s['imagen']); ?>
                 <?php if ($im): ?><img src="<?= $im ?>" alt="<?= sanitize($s['nombre']) ?>" loading="lazy">
-                <?php else: ?><div class="no-img"><?= SITE_NAME ?></div><?php endif; ?>
+                <?php else: ?><div class="no-img"><?= sanitize($s['nombre']) ?></div><?php endif; ?>
                 <div class="card-body">
                     <h4><?= sanitize($s['nombre']) ?></h4>
                     <p><?= sanitize($s['descripcion']) ?></p>
@@ -128,7 +136,7 @@ function svc_img($img) {
             <div class="card">
                 <?php $im = svc_img($s['imagen']); ?>
                 <?php if ($im): ?><img src="<?= $im ?>" alt="<?= sanitize($s['nombre']) ?>" loading="lazy">
-                <?php else: ?><div class="no-img"><?= SITE_NAME ?></div><?php endif; ?>
+                <?php else: ?><div class="no-img"><?= sanitize($s['nombre']) ?></div><?php endif; ?>
                 <div class="card-body">
                     <h4><?= sanitize($s['nombre']) ?></h4>
                     <p><?= sanitize($s['descripcion']) ?></p>
@@ -164,15 +172,36 @@ function svc_img($img) {
     </div>
 </div>
 <?php endif; ?>
+
+<section class="cats-section" id="vet">
+    <div class="cat-group">
+        <h2>Nuestra Veterinaria</h2>
+        <div class="grid">
+            <div class="card" style="padding:1.4rem; box-shadow:none">
+                <h4 style="margin-top:0">Atención cercana y de confianza</h4>
+                <p style="color:var(--text)">En <strong><?= SITE_NAME ?></strong> cuidamos a tu mascota con atención general, vacunas y castración de perros y gatos. Estamos en Av. Lafquén 260, Maipú, con horario <?= HORARIOS ?>.</p>
+                <p style="color:var(--text)"><strong>Dirección:</strong> Av. Lafquén 260, Maipú, Santiago.<br>
+                <strong>Teléfono / WhatsApp:</strong> <a href="https://wa.me/<?= WHATSAPP_NUMBER ?>">+569 9599 9482</a><br>
+                <strong>Agenda:</strong> lunes a sábado por WhatsApp o formulario</p>
+                <a class="btn-sec" href="<?= SITE_URL ?>/agenda.php">Agendar una hora</a>
+            </div>
+            <div class="card" style="padding:0; overflow:hidden; box-shadow:none">
+                <iframe src="<?= htmlspecialchars(MAPS_EMBED_URL) ?>" width="100%" height="260" style="border:0; display:block" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de <?= SITE_NAME ?>"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php $lead_origen = 'index'; include __DIR__ . '/incl/lead_form.php'; ?>
 </section>
 
 <footer class="footer">
     <p><?= SITE_NAME ?> · Av. Lafquén 260, Maipú · <a href="https://wa.me/<?= WHATSAPP_NUMBER ?>">+569 9599 9482</a></p>
+    <p><a href="<?= SITE_URL ?>/privacidad.php">Política de Privacidad</a> · <a href="<?= SITE_URL ?>/terminos.php">Términos y Condiciones</a></p>
     <p>&copy; <?= date('Y') ?> <?= SITE_NAME ?></p>
 </footer>
 
 <?php include __DIR__ . '/chat/_widget.php'; ?>
 
 </body>
-</html>
 </html>
